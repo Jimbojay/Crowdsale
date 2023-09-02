@@ -173,7 +173,7 @@ describe('Crowdsale', () => {
 
 		describe('Failure', () => {
 
-			it('prevents non-owener from updating price', async () => {
+			it('p revents non-owner from updating price', async () => {
 				await expect(crowdsale.connect(user1).setPrice(price)).to.be.reverted
 			})
 		})
