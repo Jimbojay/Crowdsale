@@ -1,11 +1,14 @@
-const message = "Hello, world!"
+import { Container } from 'react-bootstrap';
+
+
+//Components
+import Navigation from './Navigation';
 
 function App() {
 	return(
-		<div>
-			<div>{message}</div>
-			<div>{1 + 1}</div>
-		</div>
+		<Container>
+      <Navigation />
+		</Container>
 	)
 }
 
