@@ -28,6 +28,7 @@ function App() {
   const [maxTokens, setMaxTokens] = useState(0)
   const [tokensSold, setTokensSold] = useState(0)
 
+  const [metamaskLocked, setMetamaskLocked] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true)
 
@@ -42,9 +43,19 @@ function App() {
     setCrowdsale(crowdsale);
 
     // Fetch account
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    const account = ethers.utils.getAddress(accounts[0]);
-    setAccount(account);
+
+    // try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      console.log(accounts)
+      const account = ethers.utils.getAddress(accounts[0]);
+      setAccount(account);
+    
+    // } catch {
+    //   window.alert('Install and unlock metamask')
+    //   return;
+    // }
+
+    
 
     // Fetch account balance
     const accountBalance = ethers.utils.formatUnits(await token.balanceOf(account), 18)
@@ -81,25 +92,30 @@ function App() {
     <Container>
       <Navigation />
 
-      <h1 className='my=4 text-center' >Indroducing DApp Token! </h1>
+      <h1 className='my=4 text-center'>Introducing DApp Token! </h1>
 
-      {isLoading ? (
-        <Loading/>
+      {metamaskLocked ? (
+        <>
+          <p className='text-center'>MetaMask is locked. Please unlock it and click the button below to retry.</p>
+          <button onClick={loadBlockchainData}>Retry Connection</button>
+        </>
+      ) : isLoading ? (
+        <Loading />
       ) : (
         <>
           <p className='text-center'><strong>Current Price: </strong>{price} ETH</p>
-          <Buy provider={provider} price={price} crowdsale={crowdsale} setIsLoading= {setIsLoading} />
-          <Progress maxTokens={maxTokens} tokensSold={tokensSold}/>
+          <Buy provider={provider} price={price} crowdsale={crowdsale} setIsLoading={setIsLoading} />
+          <Progress maxTokens={maxTokens} tokensSold={tokensSold} />
         </>
-        
       )}
-      
+
       <hr />
       {account && (
         <Info account={account} accountBalance={accountBalance} />
       )}
     </Container>
   );
+
 }
 
 export default App;

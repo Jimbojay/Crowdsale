@@ -55,6 +55,9 @@ describe('Crowdsale', () => {
 		describe('Success', () => {
 			beforeEach(async () => {
 				// ethBalanceUser1Pre = (await ethers.provider.getBalance(user1.address)).toString()
+				transaction = await crowdsale.connect(deployer).addToWhitelist(user1.address)
+				result = await transaction.wait()
+
 				transaction = await crowdsale.connect(user1).buyTokens(amount, { value: ether(10) })
 				result = await transaction.wait()
 			})
@@ -85,7 +88,11 @@ describe('Crowdsale', () => {
 
 		describe('Failure', () => {
 			it('rejects insufficient ETH', async () =>{
-				await expect(crowdsale.connect(user1).buyTokens(tokens(10), { value: 0 })).to.be.reverted
+				await expect(crowdsale.connect(user1).buyTokens(tokens(10), { value: 0 })).to.be.reverted;
+			})
+
+			it('rejects non-whitelisted user', async () =>{
+				await expect(crowdsale.connect(deployer).buyTokens(amount, { value: ether(10)})).to.be.reverted;
 			})
 
 		})
@@ -99,6 +106,9 @@ describe('Crowdsale', () => {
 
 		describe('Success', () => {
 			beforeEach(async () => {
+				transaction = await crowdsale.connect(deployer).addToWhitelist(user1.address)
+				result = await transaction.wait()
+
 				// ethBalanceUser1Pre = (await ethers.provider.getBalance(user1.address)).toString()
 				transaction = await user1.sendTransaction({ to: crowdsale.address, value: amount })
 				result = await transaction.wait()
@@ -122,6 +132,10 @@ describe('Crowdsale', () => {
 
 		describe('Success', () =>{
 			beforeEach(async() => {
+				transaction = await crowdsale.connect(deployer).addToWhitelist(user1.address)
+				result = await transaction.wait()
+
+
 				transaction = await crowdsale.connect(user1).buyTokens(amount, { value: value })
 				result = await transaction.wait()
 
@@ -173,10 +187,37 @@ describe('Crowdsale', () => {
 
 		describe('Failure', () => {
 
-			it('p revents non-owner from updating price', async () => {
+			it('prevents non-owner from updating price', async () => {
 				await expect(crowdsale.connect(user1).setPrice(price)).to.be.reverted
 			})
 		})
+	})
+
+	describe('Whitelisting', () =>{
+		describe('Success',  () => {
+
+			beforeEach(async () => {
+				transaction = await crowdsale.connect(deployer).addToWhitelist(user1.address)
+				result = await transaction.wait()
+			})
+			
+			it('correctly retuns a whitelisted address', async () => {
+				expect (await crowdsale.connect(deployer).lookupAddressWhitelist(user1.address)).to.eq(true);
+			})
+
+			it('correctly retuns a non-whitelisted address', async () => {
+				expect (await crowdsale.connect(deployer).lookupAddressWhitelist(deployer.address)).to.eq(false);
+			})
+
+		})
+
+		describe('Failure', () => {
+			it('reject whitelisting by non-owner', async () => {
+				await expect(  crowdsale.connect(user1).addToWhitelist(user1.address)).to.be.revertedWith('caller is not te owner');
+			})
+			
+		})
+
 	})
 
 })
