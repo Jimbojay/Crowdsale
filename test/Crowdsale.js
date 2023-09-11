@@ -29,6 +29,9 @@ describe('Crowdsale', () => {
 		//Sent tokens to crowdsale
 		let transaction = await token.connect(deployer).transfer(crowdsale.address, tokens(1000000))
 		await transaction.wait()
+
+		transaction = await crowdsale.connect(deployer).addToWhitelist(user1.address)
+		result = await transaction.wait()
 	})
 
 	describe('Deployment', () => {
@@ -55,8 +58,6 @@ describe('Crowdsale', () => {
 		describe('Success', () => {
 			beforeEach(async () => {
 				// ethBalanceUser1Pre = (await ethers.provider.getBalance(user1.address)).toString()
-				transaction = await crowdsale.connect(deployer).addToWhitelist(user1.address)
-				result = await transaction.wait()
 
 				transaction = await crowdsale.connect(user1).buyTokens(amount, { value: ether(10) })
 				result = await transaction.wait()
@@ -91,10 +92,6 @@ describe('Crowdsale', () => {
 				await expect(crowdsale.connect(user1).buyTokens(tokens(10), { value: 0 })).to.be.reverted;
 			})
 
-			it('rejects non-whitelisted user', async () =>{
-				await expect(crowdsale.connect(deployer).buyTokens(amount, { value: ether(10)})).to.be.reverted;
-			})
-
 		})
 
 	})
@@ -106,8 +103,6 @@ describe('Crowdsale', () => {
 
 		describe('Success', () => {
 			beforeEach(async () => {
-				transaction = await crowdsale.connect(deployer).addToWhitelist(user1.address)
-				result = await transaction.wait()
 
 				// ethBalanceUser1Pre = (await ethers.provider.getBalance(user1.address)).toString()
 				transaction = await user1.sendTransaction({ to: crowdsale.address, value: amount })
@@ -132,9 +127,6 @@ describe('Crowdsale', () => {
 
 		describe('Success', () =>{
 			beforeEach(async() => {
-				transaction = await crowdsale.connect(deployer).addToWhitelist(user1.address)
-				result = await transaction.wait()
-
 
 				transaction = await crowdsale.connect(user1).buyTokens(amount, { value: value })
 				result = await transaction.wait()
@@ -196,10 +188,6 @@ describe('Crowdsale', () => {
 	describe('Whitelisting', () =>{
 		describe('Success',  () => {
 
-			beforeEach(async () => {
-				transaction = await crowdsale.connect(deployer).addToWhitelist(user1.address)
-				result = await transaction.wait()
-			})
 			
 			it('correctly retuns a whitelisted address', async () => {
 				expect (await crowdsale.connect(deployer).lookupAddressWhitelist(user1.address)).to.eq(true);
@@ -213,11 +201,53 @@ describe('Crowdsale', () => {
 
 		describe('Failure', () => {
 			it('reject whitelisting by non-owner', async () => {
-				await expect(  crowdsale.connect(user1).addToWhitelist(user1.address)).to.be.revertedWith('caller is not te owner');
+				await expect(  crowdsale.connect(user1).addToWhitelist(user1.address)).to.be.revertedWith('Caller is not te owner');
+			})
+
+			it('rejects a buy from a non-whitelisted user', async () =>{
+				await expect(crowdsale.connect(deployer).buyTokens(tokens(10), { value: ether(10)})).to.be.revertedWith('Caller is not whitelisted');
 			})
 			
 		})
 
+	})
+
+	describe('Min and max amount', () => {
+		describe('Failure', () => {
+			it('prevents an amount under the minimum', async () => {
+				await expect(crowdsale.connect(user1).buyTokens(tokens(9), { value: ether(9) })).to.be.revertedWith('Minimum number of tokens to buy not reached');
+			})
+
+			it('prevents an amount over the maximum', async () => {
+				transaction = await crowdsale.connect(user1).buyTokens(tokens(999), { value: ether(999) })
+				result = await transaction.wait()
+				
+				await expect(crowdsale.connect(user1).buyTokens(tokens(10), { value: ether(10) })).to.be.revertedWith('Maximum number of tokens/contribution reached');
+			})
+
+		})
+
+	})
+
+	describe('Time window', () => {
+
+		beforeEach(async () => {
+		  	const startTime = Math.floor(Date.now() / 1000); // Get the current Unix timestamp
+    		const endTime = startTime + 3600; // Allow function execution for 1 hour
+
+    		await crowdsale.setStartTime(startTime);
+    		await crowdsale.setEndTime(endTime);
+		})
+
+		// describe('Succes', () => {
+
+
+		// })
+
+		// describe('Failure', () => {
+
+			
+		// })
 	})
 
 })

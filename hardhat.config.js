@@ -1,6 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
-const privateKey = process.env.PRIVATE_KEY_TEST1 || ""
+const privateKey = process.env.PRIVATE_KEY_METAMASK || ""
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
