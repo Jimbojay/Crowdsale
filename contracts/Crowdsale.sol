@@ -35,8 +35,9 @@ contract Crowdsale {
 		startTime = block.timestamp;
 		endTime = startTime + 2 hours;
 		// whitelist[owner] = true;
-		// startTime = Math.floor(Date.now() / 1000); // Get the current Unix timestamp
+ 		// startTime = Math.floor(Date.now() / 1000); // Get the current Unix timestamp
 		// endTime = startTime + 3600; // Allow function execution for 1 hour
+
 	}
 
 
