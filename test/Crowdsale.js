@@ -23,8 +23,6 @@ describe('Crowdsale', () => {
 		deployer = accounts[0]
 		user1 = accounts[1]
 
-		console.log(user1)
-
 		//Deploy Crowdsale
 		crowdsale = await Crowdsale.deploy(token.address, ether(1), '1000000')
 
