@@ -23,6 +23,8 @@ describe('Crowdsale', () => {
 		deployer = accounts[0]
 		user1 = accounts[1]
 
+		console.log(user1)
+
 		//Deploy Crowdsale
 		crowdsale = await Crowdsale.deploy(token.address, ether(1), '1000000')
 
@@ -38,6 +40,7 @@ describe('Crowdsale', () => {
 
 		it('sends tokens to the Crowdsale contract', async () => {
 			expect(await token.balanceOf(crowdsale.address)).to.eq(tokens(1000000))
+
 		})
 
 		it('returns the price', async () => {
@@ -231,23 +234,15 @@ describe('Crowdsale', () => {
 
 	describe('Time window', () => {
 
-		beforeEach(async () => {
-		  	const startTime = Math.floor(Date.now() / 1000); // Get the current Unix timestamp
-    		const endTime = startTime + 3600; // Allow function execution for 1 hour
+		describe('Falure', () => {
+			it('reject buy orders outise of the time window', async () => {
 
-    		await crowdsale.setStartTime(startTime);
-    		await crowdsale.setEndTime(endTime);
+				await network.provider.send("evm_increaseTime", [3 * 3600]); // Increase time by 3 hours
+				await expect(crowdsale.connect(user1).buyTokens(tokens(10), { value: ether(10) })).to.be.revertedWith('Function can only be called within the specified time frame');
+			})
+
 		})
 
-		// describe('Succes', () => {
-
-
-		// })
-
-		// describe('Failure', () => {
-
-			
-		// })
 	})
 
 })

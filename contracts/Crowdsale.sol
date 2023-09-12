@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./Token.sol";
+import "hardhat/console.sol";
 
 contract Crowdsale {
 	address public owner;
@@ -31,6 +32,9 @@ contract Crowdsale {
 		maxTokens = _maxTokens;
 		minNumberOfTokensBuy = 10;
 		maxNumberOfTokensBuy = 1000;
+		startTime = block.timestamp;
+		endTime = startTime + 2 hours;
+		// whitelist[owner] = true;
 		// startTime = Math.floor(Date.now() / 1000); // Get the current Unix timestamp
 		// endTime = startTime + 3600; // Allow function execution for 1 hour
 	}
@@ -77,6 +81,8 @@ contract Crowdsale {
 
 		require(_amount >= (minNumberOfTokensBuy* 1e18) , 'Minimum number of tokens to buy not reached');
 		require((_amount + token.balanceOf(msg.sender)) <= (maxNumberOfTokensBuy* 1e18), 'Maximum number of tokens/contribution reached');
+
+		require(block.timestamp >= startTime && block.timestamp <= endTime, "Function can only be called within the specified time frame");
 
 		// require(block.timestamp >startTime );
 		// require(block.timestamp <endTime );
